@@ -1,55 +1,49 @@
-const Engine = Matter.Engine;
-const World = Matter.World;
-const Bodies = Matter.Bodies;
-const Constraint = Matter.Constraint;
+var Ball, database;
+var position;
 
-var engine, world;
-var holder,ball,ground;
-var stand1,stand2;
-var ball;
-var slingShot;
-var fruit;
-function preload(){
-  backgroundImg = loadImage("background.png");
- fruit=loadImage("melon.png");
- g=loadImage("basket.png")
+
+function setup(){
+database=firebase.database();
+  console.log(database);
+  createCanvas(500,500);
+
+  Ball = createSprite(250,250,10,10);
+  Ball.shapeColor = "red";
+   position = database.ref('ball/position'); 
+  position.on("value", readPosition, showError)
+
 }
-function setup() {
-  createCanvas(900,400);
-  engine = Engine.create();
-  world = engine.world;
-  Engine.run(engine);
-  ground = new Ground();
+
+function draw(){
+  background("white");
   
- 
-
-  //Challenge1:
-  ball = Bodies.circle(50,200,20);
-  World.add(world,ball);
-//challenge 2
-  slingShot = new Slingshot(this.ball,{x:100,y:100});
-
-}
-function draw() {
-  background(backgroundImg); 
- 
- //Engine.update(engine);
-  //text(mouseX + ',' + mouseY, 10, 15);
+    if(keyDown(LEFT_ARROW)){
+      writePosition(-1,0);
+    }
+    else if(keyDown(RIGHT_ARROW)){
+      writePosition(1,0);
+    }
+    else if(keyDown(UP_ARROW)){
+      writePosition(0,-1);
+    }
+    else if(keyDown(DOWN_ARROW)){
+      writePosition(0,+1);
+    }
+    drawSprites();
   
-  ground.display();
-  g.scale=.025;
-
-
-  imageMode(CENTER)
-  image(fruit ,ball.position.x,ball.position.y,40,40);
-  image(g,450,270)
-
-  slingShot.display();
 }
-function mouseDragged(){
-  Matter.Body.setPosition(this.ball,{x : mouseX , y : mouseY});
-}
-function mouseReleased(){
-  slingShot.fly();
 
+function writePosition(x,y){
+  database.ref('ball/position').set({ 'x': position.x + x , 'y': position.y + y })
+
+}
+
+function readPosition(data){
+  position = data.val();
+  Ball.x = position.x;
+  Ball.y = position.y;
+   }
+
+function showError(){
+ console.log("error"); 
 }
